@@ -1,42 +1,18 @@
-require('dotenv').config()
 const express = require('express');
 const morgan = require('morgan');
 const app = express();
-const Person = require('./models/person.js')
+const cors = require('cors');
+
+const Person = require('./models/person')
 const mongoose = require('mongoose')
 
 app.use(express.static('dist'))
-
-const cors = require('cors');
 
 app.use(cors());
 
 app.use(express.json());
 
 let content;
-
-let persons = [
-  {
-    "id": 1,
-    "name": "Arto Hellas",
-    "number": "040-123456"
-  },
-  {
-    "id": 2,
-    "name": "Ada Lovelace",
-    "number": "39-44-5323523"
-  },
-  {
-    "id": 3,
-    "name": "Dan Abramov",
-    "number": "12-43-234345"
-  },
-  {
-    "id": 4,
-    "name": "Mary Poppendieck",
-    "number": "39-23-6423122"
-  }
-]
 
 app.get('/', (request, response) => {
   response.send('<h1>Hi!</h1>')
@@ -45,20 +21,18 @@ app.get('/', (request, response) => {
 app.get('/api/persons', (request, response) => {
   Person.find({}).then(persons => {
     response.json(persons)
-    mongoose.connection.close()
   })
 })
 
 app.get('/api/persons/:id', (request, response) => {
   Person.findById(request.params.id).then(person => {
     response.json(person)
-    mongoose.connection.close()
   })
 })
 
 app.delete('/api/persons/:id', (request, response) => {
   const id = Number(request.params.id)
-  persons = persons.filter(person => person.id !== id)
+  Person = Person.filter(person => person.id !== id)
   response.status(204).end()
 })
 
@@ -86,7 +60,7 @@ app.post('/api/persons', (request, response) => {
       error: 'number missing'
     })
   }
-  if (persons.find(person => person.name === body.name)) {
+  if (Person.find(person => person.name === body.name)) {
     return response.status(400).json({  // 400 Bad Request
       error: 'name must be unique'
     })
@@ -100,7 +74,6 @@ app.post('/api/persons', (request, response) => {
 
   person.save().then(savedPerson => {
     response.json(savedPerson)
-    mongoose.connection.close()
   })
 })
 

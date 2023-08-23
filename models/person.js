@@ -1,4 +1,6 @@
 const mongoose = require('mongoose')
+require('dotenv').config()
+
 
 mongoose.set('strictQuery', false)
 
@@ -29,6 +31,5 @@ personSchema.set('toJSON', {
     delete returnedObject.__v
   }
 })
-
 
 module.exports = mongoose.model('Person', personSchema)
