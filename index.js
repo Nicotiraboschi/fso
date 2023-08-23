@@ -31,16 +31,22 @@ app.get('/api/persons/:id', (request, response) => {
 })
 
 app.delete('/api/persons/:id', (request, response) => {
-  const id = Number(request.params.id)
-  Person = Person.filter(person => person.id !== id)
-  response.status(204).end()
-})
+  const id = request.params.id;
+  console.log(id)
 
-const generateId = function generatePhonebookEntryId() {
-  const minId = 5; // Minimum ID value
-  const maxId = 999999; // Maximum ID value
-  return Math.floor(Math.random() * (maxId - minId + 1)) + minId;
-}
+  // Find and delete the person
+  Person.findOneAndDelete({ _id: id })
+    .then(deletedPerson => {
+      if (!deletedPerson) {
+        return response.status(404).json({ error: 'Person not found' });
+      }
+      response.status(204).end(); // 204 No Content (successful delete)
+    })
+    .catch(error => {
+      console.error('Error deleting person:', error);
+      response.status(500).json({ error: 'Error deleting person' });
+    });
+})
 
 app.post('/api/persons', (request, response) => {
   const body = request.body
@@ -60,25 +66,34 @@ app.post('/api/persons', (request, response) => {
       error: 'number missing'
     })
   }
-  if (Person.find(person => person.name === body.name)) {
-    return response.status(400).json({  // 400 Bad Request
-      error: 'name must be unique'
-    })
-  }
+  Person.findOne({ name: body.name })
+  .then(existingPerson => {
+    if (existingPerson) {
+      return response.status(400).json({
+        error: 'name must be unique'
+      });
+    }
 
-  const person = {
-    id: generateId(),
-    name: body.name,
-    number: body.number
-  }
+    const person = new Person({
+      name: body.name,
+      number: body.number
+    });
 
   person.save().then(savedPerson => {
     response.json(savedPerson)
+  }).catch(error => {
+    console.error('Error saving person:', error);
+    response.status(500).json({ error: 'Error saving person' });
+  });
   })
+  .catch(error => {
+    console.error('Error checking uniqueness:', error);
+    response.status(500).json({ error: 'Server error' });
+  });
 })
 
 app.get('/info', (request, response) => {
-  response.send(`<p>Phonebook has info for ${persons.length} people</p><p>${new Date()}</p>`)
+  response.send(`<p>Phonebook has info for ${Person.length} people</p><p>${new Date()}</p>`)
 })
 
 morgan.token('content', function (req, res) {
