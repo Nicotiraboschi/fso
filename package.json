@@ -7,7 +7,7 @@
     "start": "node index.js",
     "dev": "nodemon index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build:ui": "rm -rf build && cd ../part2_phonebook_front && npm run build && cp -r build ../part2_phonebook_front",
+    "build:ui": "rm -rf build && cd ../part2_phonebook_front && npm run build && cp -r build ../part3_phonebook_back",
     "deploy:full": "npm run build:ui && git add . && git commit -m uibuild && git push",
     "logs:prod": "fly logs"
   },
@@ -19,7 +19,7 @@
     "express": "^4.18.2",
     "mongodb": "^5.8.0",
     "mongoose": "^7.4.4",
-    "morgan": "^1.10.0"
+    "mrgaon": "^1.10.0"
   },
   "devDependencies": {
     "nodemon": "^3.0.1"
