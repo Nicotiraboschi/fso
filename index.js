@@ -1,6 +1,9 @@
+require('dotenv').config()
 const express = require('express');
 const morgan = require('morgan');
 const app = express();
+const Person = require('./models/person.js')
+const mongoose = require('mongoose')
 
 app.use(express.static('dist'))
 
@@ -40,19 +43,17 @@ app.get('/', (request, response) => {
 })
 
 app.get('/api/persons', (request, response) => {
-  content = persons;
-  response.json(persons)
+  Person.find({}).then(persons => {
+    response.json(persons)
+    mongoose.connection.close()
+  })
 })
 
 app.get('/api/persons/:id', (request, response) => {
-  const id = Number(request.params.id)
-  const person = persons.find(person => person.id === id)
-  if (person) {
-    content = person;
+  Person.findById(request.params.id).then(person => {
     response.json(person)
-  } else {
-    response.status(404).end()
-  }
+    mongoose.connection.close()
+  })
 })
 
 app.delete('/api/persons/:id', (request, response) => {
@@ -69,7 +70,6 @@ const generateId = function generatePhonebookEntryId() {
 
 app.post('/api/persons', (request, response) => {
   const body = request.body
-  console.log(body)
 
   if (!body) {
     return response.status(400).json({
@@ -98,10 +98,10 @@ app.post('/api/persons', (request, response) => {
     number: body.number
   }
 
-  persons = persons.concat(person)
-
-  content = person;
-  response.json(person)
+  person.save().then(savedPerson => {
+    response.json(savedPerson)
+    mongoose.connection.close()
+  })
 })
 
 app.get('/info', (request, response) => {
@@ -114,7 +114,7 @@ morgan.token('content', function (req, res) {
 
 app.use(morgan(':method :url :status :response-time ms :content'));
 
-const PORT = process.env.PORT | 3001
+const PORT = process.env.PORT
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
 })
